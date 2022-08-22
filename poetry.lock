@@ -1,0 +1,24 @@
+[[package]]
+name = "numpy"
+version = "1.23.2"
+description = "NumPy is the fundamental package for array computing with Python."
+category = "main"
+optional = false
+python-versions = ">=3.8"
+
+[[package]]
+name = "pybullet"
+version = "3.2.5"
+description = "Official Python Interface for the Bullet Physics SDK specialized for Robotics Simulation and Reinforcement Learning"
+category = "main"
+optional = false
+python-versions = "*"
+
+[metadata]
+lock-version = "1.1"
+python-versions = "^3.8"
+content-hash = "1ff9d8480a0226de470e2d754a1e6b69fcab50f82213147758ba2dc6cdd866e7"
+
+[metadata.files]
+numpy = []
+pybullet = []
