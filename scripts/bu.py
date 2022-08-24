@@ -47,7 +47,7 @@ physicsClient = p.connect(p.GUI)
 # load a component into pybullet
 current_comp = COMP_LIST[0]
 object_id=p.loadURDF(
-    'components/'+current_comp+'/model.urdf', 
+    '../components/'+current_comp+'/model.urdf', 
     basePosition=[0,0,0],  #r:x
     baseOrientation=[0,0,0,1], 
     useFixedBase=True
@@ -72,10 +72,10 @@ current_spot_position = (all_spots[1,4:7].astype(float))/1000
 #     cameraTargetPosition=[0,0,0]
 # )
 p.resetDebugVisualizerCamera( 
-    cameraDistance=5, 
-    cameraPitch=-50.6, 
-    cameraYaw=-11.6, 
-    cameraTargetPosition=[10.44,7.34,-2.31]
+    cameraDistance=23, 
+    cameraPitch=-35, 
+    cameraYaw=50, 
+    cameraTargetPosition=[0,0,0]
 )
 
 # p.setAdditionalSearchPath(pd.getDataPath())
@@ -91,51 +91,71 @@ rayTo = []
 rayIds = []
 useGui = True
 
-numRays = 64
+numRays = 128
 
 rayLen = 20
 
-rayHitColor = [x / 255 for x in [255, 0, 0]]
-rayMissColor = [x / 255 for x in [0, 255, 0]]
+rayHitColor = [1, 0, 0]
+rayMissColor = [0, 1, 0]
 
 replaceLines = True
-# pybullet.MAX_RAY_INTERSECTION_BATCH_SIZE
-# 16384  2^14
-ray_th = 0
-for xy in range(numRays):
-    for z in range(numRays):
-        # rayFrom.append([0, 0, 1])
-        rayFrom.append([current_spot_position[0], current_spot_position[1], 0])
-        # rayFrom.append([5, 5, 0])
-        phi = 2. * math.pi * float(xy) / numRays
-        theta = 2. * math.pi * float(z) / numRays
-        rayTo.append([
-            rayLen * math.sin(phi) * math.cos(theta),
-            rayLen * math.sin(phi) * math.sin(theta),
-            rayLen * math.cos(phi) 
-        ])
-        # if (replaceLines):
-            # rayIds.append(p.addUserDebugLine(rayFrom[ray_th], rayTo[ray_th], rayMissColor))
-        # else:
-        #     rayIds.append(-1)
-        ray_th = ray_th +1
+
+for i in range(numRays):
+    # rayFrom.append([0, 0, 1])
+    # rayFrom.append([current_spot_position[0], current_spot_position[1], 0])
+    rayFrom.append([5,5, 0])
+    rayTo.append([
+        rayLen * math.sin(2. * math.pi * float(i) / numRays),
+        rayLen * math.cos(2. * math.pi * float(i) / numRays), 
+        0
+    ])
+    if (replaceLines):
+        rayIds.append(p.addUserDebugLine(rayFrom[i], rayTo[i], rayMissColor))
+    else:
+        rayIds.append(-1)
+
+if (not useGui):
+    timingLog = p.startStateLogging(p.STATE_LOGGING_PROFILE_TIMINGS, "rayCastBench.json")
+
 
 results = p.rayTestBatch(rayFrom, rayTo)
 
 for i in range(0, len(results)):
     hitObjectUid = results[i][0]
+    
     if (hitObjectUid < 0):
         hitPosition = [0, 0, 0]
-        # p.addUserDebugLine(rayFrom[i], rayTo[i], rayMissColor, replaceItemUniqueId=rayIds[i])
-        # p.removeUserDebugItem(itemUniqueId=rayIds[i])
-        pass
+        p.addUserDebugLine(rayFrom[i], rayTo[i], rayMissColor, replaceItemUniqueId=rayIds[i])
     else:
         hitPosition = results[i][3]
-        print(f"hit object: {results[i][0]} link index {results[i][1]} hit fraction {results[i][2]} hit pos {results[i][3]} hit nor {results[i][4]}")
-        # p.addUserDebugText(text=str(results[i][3]) + str(results[i][4]), textPosition=results[i][3])
-        p.addUserDebugLine(rayFrom[i], hitPosition, rayHitColor)
-print(current_spot_position)
+        p.addUserDebugLine(rayFrom[i], hitPosition, rayHitColor, replaceItemUniqueId=rayIds[i])
 
+
+# numSteps = 10
+# if (useGui):
+#     numSteps = 327680
+
+# for i in range(numSteps):
+#     p.stepSimulation()
+#     for j in range(8):
+#         results = p.rayTestBatch(rayFrom, rayTo, j + 1)
+
+#   #for i in range (10):
+#   #	p.removeAllUserDebugItems()
+
+#     if (useGui):
+#         if (not replaceLines):
+#             p.removeAllUserDebugItems()
+
+#         for i in range(numRays):
+#             hitObjectUid = results[i][0]
+
+#             if (hitObjectUid < 0):
+#                 hitPosition = [0, 0, 0]
+#                 p.addUserDebugLine(rayFrom[i], rayTo[i], rayMissColor, replaceItemUniqueId=rayIds[i])
+#             else:
+#                 hitPosition = results[i][3]
+#                 p.addUserDebugLine(rayFrom[i], hitPosition, rayHitColor, replaceItemUniqueId=rayIds[i])
 
 # start simulator
 while True:
