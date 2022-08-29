@@ -7,6 +7,9 @@ import os
 import csv, math
 import sys, getopt
 
+numRays = 32
+draw_breams = False
+
 COMP_DIR = "components"
 component_dirs = os.listdir(COMP_DIR)
 
@@ -103,13 +106,10 @@ with open(f"naht/all.csv", 'w') as all_csvfile:
                 rayFrom = []
                 rayTo = []
                 rayIds = []
-                numRays = 64
                 rayLen = 20
 
                 rayHitColor = [x / 255 for x in [255, 0, 0]]
                 rayMissColor = [x / 255 for x in [0, 255, 0]]
-
-                draw_breams = True
                 
                 # pybullet.MAX_RAY_INTERSECTION_BATCH_SIZE
                 # 16384  2^14
