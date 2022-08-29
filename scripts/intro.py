@@ -4,6 +4,8 @@ import numpy as np
 import pybullet as p
 import pybullet_data as pd
 import random
+import time
+
 CURRENT_PATH = os.path.abspath(__file__)
 BASE = os.path.dirname(os.path.dirname(CURRENT_PATH)) 
 ROOT = os.path.dirname(BASE) 
@@ -96,7 +98,7 @@ rayTo = []
 rayIds = []
 useGui = True
 
-numRays = 64
+numRays = 32
 
 rayLen = 20
 
@@ -128,7 +130,7 @@ if draw_breams:
             # ray_th = ray_th +1
 
     results = p.rayTestBatch(rayFrom, rayTo)
-
+    debug_items_id = []
     for i in range(0, len(results)):
         hitObjectUid = results[i][0]
         if (hitObjectUid < 0):
@@ -140,9 +142,12 @@ if draw_breams:
             hitPosition = results[i][3]
             print(f"hit object: {results[i][0]} link index {results[i][1]} hit fraction {results[i][2]} hit pos {results[i][3]} hit nor {results[i][4]}")
             # p.addUserDebugText(text=str(results[i][3]) + str(results[i][4]), textPosition=results[i][3])
-            p.addUserDebugLine(rayFrom[i], hitPosition, rayHitColor)
+            debug_items_id.append(p.addUserDebugLine(rayFrom[i], hitPosition, rayHitColor))
     print(current_spot_position)
-
+    time.sleep(5)
+    # for id in debug_items_id:
+    #     p.removeUserDebugItem(itemUniqueId=id)
+    p.removeAllUserDebugItems()
 # start simulator
 while True:
     p.stepSimulation()
