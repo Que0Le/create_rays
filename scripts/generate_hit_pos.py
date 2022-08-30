@@ -143,7 +143,7 @@ with open(f"naht/all.csv", 'w') as all_csvfile:
                         "WkzWkl", "WkzName",
                         "Punkt_Pos", "Punkt_Fl_Norm1", "Punkt_Fl_Norm2",
                         "Frame_Pos", "Frame_Xvek", "Frame_Yvek", "Frame_Zvek",
-                        "pos", "nor_pos"
+                        "hit_fraction", "pos", "nor_pos"
                     ])
                     for hit_th in range(0, len(hit_pos)):
                         naht_writer.writerow([
@@ -153,10 +153,11 @@ with open(f"naht/all.csv", 'w') as all_csvfile:
                             " ".join(str(x) for x in fl_norms[1]),
                             ###
                             " ".join(str(x) for x in frame_pos),
-                            " ".join(str(x) for x in XVek),
-                            " ".join(str(x) for x in YVek),
-                            " ".join(str(x) for x in ZVek),
+                            " ".join(str(x) for x in frame_veks[0]),
+                            " ".join(str(x) for x in frame_veks[1]),
+                            " ".join(str(x) for x in frame_veks[2]),
                             ###
+                            hit_fraction[hit_th],
                             " ".join(str(x) for x in hit_pos[hit_th]),
                             " ".join(str(x) for x in nor_pos[hit_th]),
                         ])
