@@ -2,3 +2,5 @@ __pycache__/
 *.py[cod]
 
 naht/
+naht2/
+result_predict.csv
