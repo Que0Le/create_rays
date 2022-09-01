@@ -182,19 +182,19 @@ if not os.path.isdir(f"./{NAHT_DIR}"):
     Path(NAHT_DIR).mkdir()
 
 
-# setup_pb()
+setup_pb()
 
 
 """ Generate the DB """
-# generate_db_for_obj(
-#     obj_dir=TEST_OBJ, target_dir=NAHT_DIR, 
-#     num_ray=32, ray_len=20, miss_faction=-20, draw_breams=False
-# )
+generate_db_for_obj(
+    obj_dir=TEST_OBJ, target_dir=NAHT_DIR, 
+    num_ray=32, ray_len=20, miss_faction=-20, draw_breams=False
+)
 
 
 """ Take a Punkt and use as test target """
 to_predict_Punkt_csv_file = f"{NAHT_DIR}/to_predict_Punkt.csv"
-# shutil.copy2(f"{NAHT_DIR}/201910204483.PgmDef_0_0.MRW510_10GH.45.0.csv", to_predict_Punkt_csv_file)
+shutil.copy2(f"{NAHT_DIR}/201910204483.PgmDef_0_0.MRW510_10GH.45.0.csv", to_predict_Punkt_csv_file)
 
 
 """ Predict """
