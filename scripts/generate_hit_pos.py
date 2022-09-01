@@ -130,12 +130,15 @@ with open(f"naht/all.csv", 'w') as all_csvfile:
                 for i in range(0, len(results)):
                     hitObjectUid = results[i][0]
                     if (hitObjectUid >= 0): # hit
-                        hitPosition = results[i][3]
                         hit_fraction.append(results[i][2])
                         hit_pos.append(results[i][3])
                         nor_pos.append(results[i][4])
                         if draw_breams:
-                            p.addUserDebugLine(rayFrom[i], hitPosition, rayHitColor)
+                            p.addUserDebugLine(rayFrom[i], results[i][3], rayHitColor)
+                    else:
+                        hit_fraction.append(-1)
+                        hit_pos.append(np.array([0,0,0]))
+                        nor_pos.append(np.array([0,0,0]))
                 """  """
                 with open(f"naht/{hit_file_for_naht}", 'w') as naht_csvfile:
                     naht_writer = csv.writer(naht_csvfile, delimiter=";")
