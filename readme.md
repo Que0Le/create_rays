@@ -45,3 +45,19 @@ for naht_file in list_naht_csv_file:
     # Add result object
     res_dist.append(pred_score_for_methods)
 ```
+
+
+After test a welding point against all the welding point in the object, 
+run the visualization script to see how they located on the object:
+
+```
+python scripts/visualize_predicted_welding_spot.py
+```
+
+<figure>
+  <img
+  src="./media/visual_welding_points.png"
+  width="100%"
+  alt="Red and blue represented 2 prediction methods" title="Red and blue represented 2 prediction methods" >
+  <figcaption>Red and blue represented 2 prediction methods</figcaption>
+</figure>
