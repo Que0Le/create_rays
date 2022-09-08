@@ -212,6 +212,8 @@ for naht_file in list_naht_csv_file:
     df_candidate = pd.read_csv(f"{NAHT_DIR}/{naht_file}", sep=';')
     hit_fraction_candidate = df_candidate["hit_fraction"].to_numpy()
     pred_score_for_methods = {}
+    # Teham L1-L2
+    pred_score_for_methods["L1-L2"] = np.mean(hit_fraction_candidate - hit_faction_target)
     # L2 distance method
     distance = np.linalg.norm(-(hit_fraction_candidate - hit_faction_target)) # L-2 norm
     pred_score_for_methods["L2_Norm"] = distance
