@@ -205,29 +205,20 @@ hit_faction_target = df["hit_fraction"].to_numpy()
 list_naht_csv_file = os.listdir(f"{NAHT_DIR}/")
 list_naht_csv_file.remove("to_predict_Punkt.csv")
 
-pred_methods = ["L1-L2", "L2_Norm", "Test_method", "cosine_similarity", "difflib_SequenceMatcher"]
+pred_methods = ["L2_Norm", "difflib_SequenceMatcher"]
 res_dist = []   # hold scores for all Punkt
 import difflib
 for naht_file in list_naht_csv_file:
     df_candidate = pd.read_csv(f"{NAHT_DIR}/{naht_file}", sep=';')
     hit_fraction_candidate = df_candidate["hit_fraction"].to_numpy()
     pred_score_for_methods = {}
-    # Teham L1-L2
-    pred_score_for_methods["L1-L2"] = np.mean(hit_fraction_candidate - hit_faction_target)
     # L2 distance method
     distance = np.linalg.norm(-(hit_fraction_candidate - hit_faction_target)) # L-2 norm
     pred_score_for_methods["L2_Norm"] = distance
-    # Test method
-    pred_score_for_methods["Test_method"] = "test_" + str(random.random())
-    # TODO: More methods ...
-    # cosine_similarity
-    numerator = np.dot(hit_faction_target, hit_fraction_candidate.T)
-    denominator = np.linalg.norm(hit_faction_target) * np.linalg.norm(hit_fraction_candidate)
-    cosine_similarity = numerator / denominator
-    pred_score_for_methods["cosine_similarity"] = cosine_similarity
     # difflib
     sm=difflib.SequenceMatcher(None, hit_faction_target, hit_fraction_candidate)
     pred_score_for_methods["difflib_SequenceMatcher"] = sm.ratio()
+    # TODO: more methods
 
     # Add result object
     res_dist.append(pred_score_for_methods)

@@ -8,7 +8,7 @@
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
-            "program": "./scripts/intro.py",
+            "program": "./scripts/mapping_full.py",
             "console": "integratedTerminal",
             "justMyCode": true
         }
