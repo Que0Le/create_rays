@@ -4,3 +4,4 @@ __pycache__/
 naht/
 naht2/
 result_predict.csv
+to_predict_Punkt.csv

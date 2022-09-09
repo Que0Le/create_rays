@@ -10,6 +10,7 @@ import pandas as pd
 from pathlib import Path
 from typing import List
 
+
 NAHT_DIR = "naht2"
 COMP_DIR = "components"
 TEST_OBJ = "201910204483"
@@ -84,10 +85,12 @@ object_id = p.loadURDF(
     useFixedBase=True
 )
 
-import pandas as pd
-thres_L2_Norm = 1
-thres_cosine_similarity = 1
-thres_difflib_SequenceMatcher = 1
+""" Visualize to_predict_punkt with a white, bigger sphere """
+to_predict_point_csv = pd.read_csv(f"to_predict_Punkt.csv", sep=';')
+visualize_welding_spot(
+    Punkt_Pos=to_predict_point_csv.head(1)["Punkt_Pos"].values[0], 
+    rgbaColor=[1,1,1,1], size=0.15
+)
 
 result_predicted_file = pd.read_csv(f"result_predict.csv", sep=';')
 welding_point_filenames = result_predicted_file["Punkt"].to_numpy()

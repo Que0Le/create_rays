@@ -182,18 +182,18 @@ if not os.path.isdir(f"./{NAHT_DIR}"):
     Path(NAHT_DIR).mkdir()
 
 
-# setup_pb()
+setup_pb()
 
 
-# """ Generate the DB """
-# generate_db_for_obj(
-#     obj_dir=TEST_OBJ, target_dir=NAHT_DIR, 
-#     num_ray=32, ray_len=20, miss_faction=-20, draw_breams=False
-# )
+""" Generate the DB """
+generate_db_for_obj(
+    obj_dir=TEST_OBJ, target_dir=NAHT_DIR, 
+    num_ray=32, ray_len=20, miss_faction=-20, draw_breams=True
+)
 
 
 """ Take a Punkt and use as test target """
-to_predict_Punkt_csv_file = f"{NAHT_DIR}/to_predict_Punkt.csv"
+to_predict_Punkt_csv_file = f"to_predict_Punkt.csv"
 shutil.copy2(f"{NAHT_DIR}/201910204483.PgmDef_44_1.TAND_GERAD_DD.10.1.csv", to_predict_Punkt_csv_file)
 
 
@@ -203,7 +203,7 @@ df = pd.read_csv(to_predict_Punkt_csv_file, sep=';')
 hit_faction_target = df["hit_fraction"].to_numpy()
 # List of only DB file
 list_naht_csv_file = os.listdir(f"{NAHT_DIR}/")
-list_naht_csv_file.remove("to_predict_Punkt.csv")
+# list_naht_csv_file.remove("to_predict_Punkt.csv")
 
 pred_methods = ["L2_Norm", "difflib_SequenceMatcher"]
 res_dist = []   # hold scores for all Punkt
