@@ -38,9 +38,8 @@ def show_welding_target(position):
 def generate_hit_for_punkt(
     db_file_path: str, Punkt_th: Element, Frame_th: Element, 
     ZRotLock: str, WkzWkl: str, WkzName: str,
-    num_ray: int = 32, ray_len: int = 20, miss_faction: int = -20, draw_breams: bool = False
+    num_ray: int = 32, ray_len: float = 1, miss_faction: float = -1, draw_breams: bool = False
 ):
-    # hit_file_for_naht = f"{obj_dir}.{Name}.{WkzName}.{WkzWkl}.{i}.csv"
     punk_xyz = np.array([
         float(Punkt_th.get('X')), float(
             Punkt_th.get('Y')), float(Punkt_th.get('Z'))
@@ -77,8 +76,9 @@ def generate_hit_for_punkt(
     hit_pos = []
     nor_pos = []
     hit_fraction = []
-    # Run sim
-    """  """
+
+
+    """ Run sim """
 
     rayFrom = []
     rayTo = []
@@ -90,14 +90,20 @@ def generate_hit_for_punkt(
     # 16384  2^14
     for xy in range(num_ray):
         for z in range(num_ray):
-            rayFrom.append(punk_xyz/1000)
+            start_pos = punk_xyz/1000
             phi = 2. * math.pi * float(xy) / num_ray
             theta = 2. * math.pi * float(z) / num_ray
-            rayTo.append([
-                ray_len * math.sin(phi) * math.cos(theta),
-                ray_len * math.sin(phi) * math.sin(theta),
-                ray_len * math.cos(phi)
-            ])
+            end_pos = [s+e for s, e in zip(
+                [
+                    ray_len * math.sin(phi) * math.cos(theta),
+                    ray_len * math.sin(phi) * math.sin(theta),
+                    ray_len * math.cos(phi)
+                ],
+                start_pos
+                )
+            ]
+            rayFrom.append(start_pos)
+            rayTo.append(end_pos)
 
     results = p.rayTestBatch(rayFrom, rayTo)
 
@@ -113,6 +119,8 @@ def generate_hit_for_punkt(
             hit_fraction.append(miss_faction)
             hit_pos.append(np.array([0,0,0]))
             nor_pos.append(np.array([0,0,0]))
+            if draw_breams:
+                p.addUserDebugLine(rayFrom[i], rayTo[i], rayMissColor)
     """  """
     with open(db_file_path, 'w') as naht_csvfile:
         naht_writer = csv.writer(naht_csvfile, delimiter=";")
@@ -144,7 +152,7 @@ def generate_hit_for_punkt(
 
 def generate_db_for_obj(
     obj_dir: str, target_dir: str, 
-    num_ray: int = 32, ray_len: int = 20, miss_faction: int = -20, draw_breams: bool = False
+    num_ray: int = 32, ray_len: float = 1.0, miss_faction: float = -1.0, draw_breams: bool = False
 ):
     """ 
     For each SchweissPunkt, create a lidar map around and export all rays to csv file. 
@@ -188,7 +196,7 @@ setup_pb()
 """ Generate the DB """
 generate_db_for_obj(
     obj_dir=TEST_OBJ, target_dir=NAHT_DIR, 
-    num_ray=32, ray_len=20, miss_faction=-20, draw_breams=True
+    num_ray=20, ray_len=1, miss_faction=-1, draw_breams=True
 )
 
 
