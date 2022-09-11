@@ -8,12 +8,25 @@ import os, shutil
 import csv, math
 import pandas as pd
 from pathlib import Path
-
+import difflib
+import open3d as o3d
+from open3d_visualize_predicted_welding_spot import create_pose_torch
+from copy import copy
 
 NAHT_DIR = "naht2"
 COMP_DIR = "components"
 TEST_OBJ = "201910204483"
 TEST_NAHT = "PgmDef_34_0" # has 2 Punkt, so we take first one.
+
+
+SHOW_OBJECT_WITH_ALL_POSES = False
+elements = []
+torch1 = o3d.io.read_triangle_mesh("torches/MRW510_10GH.obj")
+torch2 = o3d.io.read_triangle_mesh("torches/TAND_GERAD_DD.obj")
+if SHOW_OBJECT_WITH_ALL_POSES:
+    mesh_model = o3d.io.read_triangle_mesh("components/201910204483_R1.obj")
+    mesh_model.compute_vertex_normals()
+    elements.append(mesh_model)
 
 
 def setup_pb():
@@ -72,6 +85,19 @@ def generate_hit_for_punkt(
         float(ZVek.get('X')), float(
             ZVek.get('Y')), float(ZVek.get('Z'))
     ]))
+
+    # create pos for visualization the whole object with poses
+    if SHOW_OBJECT_WITH_ALL_POSES:
+        elements.append(
+            create_pose_torch(
+                torch_color=np.array([255, 0, 0])/255, 
+                mesh_torch=copy(torch1) if WkzName=="MRW510_10GH" else copy(torch2),
+                position=punk_xyz, 
+                XVek=frame_veks[0],
+                YVek=frame_veks[1],
+                ZVek=frame_veks[2],
+            )
+        )
 
     hit_pos = []
     nor_pos = []
@@ -196,7 +222,7 @@ setup_pb()
 """ Generate the DB """
 generate_db_for_obj(
     obj_dir=TEST_OBJ, target_dir=NAHT_DIR, 
-    num_ray=20, ray_len=1, miss_faction=-1, draw_breams=True
+    num_ray=10, ray_len=1, miss_faction=1, draw_breams=False
 )
 
 
@@ -209,13 +235,20 @@ shutil.copy2(f"{NAHT_DIR}/201910204483.PgmDef_44_1.TAND_GERAD_DD.10.1.csv", to_p
 # Read target hit data
 df = pd.read_csv(to_predict_Punkt_csv_file, sep=';')
 hit_faction_target = df["hit_fraction"].to_numpy()
+first_row = df.head(1)
+Punkt_Fl_Norm1: str = first_row["Punkt_Fl_Norm1"].values[0]
+Punkt_Fl_Norm2: str = first_row["Punkt_Fl_Norm2"].values[0]
+to_predict_norms_l2_distance = np.linalg.norm(
+    np.array([float(a) for a in Punkt_Fl_Norm1.split(" ")])-np.array([float(b) for b in Punkt_Fl_Norm2.split(" ")])
+)
+
 # List of only DB file
 list_naht_csv_file = os.listdir(f"{NAHT_DIR}/")
 # list_naht_csv_file.remove("to_predict_Punkt.csv")
 
-pred_methods = ["L2_Norm", "difflib_SequenceMatcher"]
+pred_methods = ["L2_Norm", "difflib_SequenceMatcher", "Fl_norms_distance"]
 res_dist = []   # hold scores for all Punkt
-import difflib
+
 for naht_file in list_naht_csv_file:
     df_candidate = pd.read_csv(f"{NAHT_DIR}/{naht_file}", sep=';')
     hit_fraction_candidate = df_candidate["hit_fraction"].to_numpy()
@@ -228,6 +261,14 @@ for naht_file in list_naht_csv_file:
     # difflib
     sm=difflib.SequenceMatcher(None, hit_faction_target, hit_fraction_candidate)
     pred_score_for_methods["difflib_SequenceMatcher"] = sm.ratio()
+    # Fl_norm_distance
+    first_row = df_candidate.head(1)
+    Punkt_Fl_Norm1: str = first_row["Punkt_Fl_Norm1"].values[0]
+    Punkt_Fl_Norm2: str = first_row["Punkt_Fl_Norm2"].values[0]
+    norms_l2_distance = np.linalg.norm(
+        np.array([float(a) for a in Punkt_Fl_Norm1.split(" ")])-np.array([float(b) for b in Punkt_Fl_Norm2.split(" ")])
+    )
+    pred_score_for_methods["Fl_norms_distance"] = norms_l2_distance - to_predict_norms_l2_distance
     # TODO: more methods
 
     # Add result object
@@ -242,3 +283,8 @@ with open(f"result_predict.csv", 'w') as result_predict_csvfile:
         result_writer.writerow([
             list_naht_csv_file[i], *[res_dist[i][method] for method in pred_methods]
         ])
+
+
+if SHOW_OBJECT_WITH_ALL_POSES:
+    o3d.visualization.draw_geometries(elements)
+    # TODO: how to export to image???

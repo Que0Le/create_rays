@@ -9,6 +9,7 @@ python = "^3.8"
 pybullet = "^3.2.5"
 numpy = "^1.23.2"
 pandas = "^1.4.4"
+open3d = "^0.15.2"
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.7.0"
