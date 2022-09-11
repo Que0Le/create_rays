@@ -28,6 +28,11 @@ def get_top_scoring_indices_for_method(scorings: np.array, method: str, nbr_valu
         # greater is more similar
         ind = np.argpartition(a=scorings, kth=-1*nbr_values)[-1*nbr_values:]
         return ind[np.argsort(a=scorings[ind])]
+    elif method == "Fl_norms_distance":
+        # Smaller is bettter
+        scorings = np.absolute(scorings)
+        ind = np.argpartition(a=scorings, kth=nbr_values)[:nbr_values]
+        return ind[np.argsort(a=-1*scorings[ind])]        
     else:
         return np.array([])
 
@@ -75,29 +80,53 @@ torch2 = o3d.io.read_triangle_mesh("torches/TAND_GERAD_DD.obj")
 
 """ Visualize to_predict_punkt with a white, bigger sphere """
 to_predict_point_csv = pd.read_csv(f"to_predict_Punkt.csv", sep=';')
+mesh_sphere = o3d.geometry.TriangleMesh.create_sphere(radius = 300.0)
+head_1 = to_predict_point_csv.head(1)
+Punkt_Pos: str = head_1["Punkt_Pos"].values[0]
+Frame_XVek: str = head_1["Frame_Xvek"].values[0]
+Frame_YVek: str = head_1["Frame_Yvek"].values[0]
+Frame_ZVek: str = head_1["Frame_Zvek"].values[0]
+tf = np.zeros((4,4))  # 4x4 homogenous transform
+tf[3,3] = 1.0
+tf[0:3,3] = [float(coord) for coord in Punkt_Pos.split(" ")]
+tf[0:3, 0] = [float(coord) for coord in Frame_XVek.split(" ")]
+tf[0:3, 1] = [float(coord) for coord in Frame_YVek.split(" ")]
+tf[0:3, 2] = [float(coord) for coord in Frame_ZVek.split(" ")]
+mesh_sphere.compute_vertex_normals()
+mesh_sphere.paint_uniform_color(np.array([255,255,0])/255)
+mesh_sphere.transform(tf)
+elements.append(mesh_sphere)
+
 result_predicted_file = pd.read_csv(f"result_predict.csv", sep=';')
 welding_point_filenames = result_predicted_file["Punkt"].to_numpy()
 
 torches_colors = {
-    "torch_1_method_L2_Norm": np.array([255, 0, 0])/255,
-    "torch_2_method_L2_Norm": np.array([255, 0, 255])/255,
+    "torch_1_method_L2_Norm": np.array([255, 0, 255])/255,
+    "torch_2_method_L2_Norm": np.array([255, 0, 255])/255,#np.array([255, 0, 255])/255,
     #
-    "torch_1_method_difflib_SequenceMatcher": np.array([0, 255, 0])/255,
-    "torch_2_method_difflib_SequenceMatcher": np.array([0, 255, 255])/255,
+    "torch_1_method_difflib_SequenceMatcher": np.array([255, 0, 0])/255,
+    "torch_2_method_difflib_SequenceMatcher": np.array([255, 0, 0])/255,#np.array([0, 255, 255])/255,    
+    #
+    "torch_1_method_Fl_norms_distance": np.array([0, 0, 255])/255,
+    "torch_2_method_Fl_norms_distance": np.array([0, 0, 255])/255,
     #
     "torch_1_to_predict_spot": np.array([255, 255, 255])/255,
     "torch_2_to_predict_spot": np.array([255, 255, 255])/255,
 }
 
 i_th = 1
+poses_mapped_by_methods = {}
+
 for method in result_predicted_file.columns.values[1:]:
-    # if i_th == 1:
+    # if method != "Fl_norms_distance":
     #     i_th = i_th + 1
     #     continue
     scorings = result_predicted_file[method].to_numpy()    # np array holds scorings for current method
-    indices = get_top_scoring_indices_for_method(scorings=scorings, method=method, nbr_values=20)
-    print(method)
-    print(scorings[indices])
+    indices = get_top_scoring_indices_for_method(scorings=scorings, method=method, nbr_values=50)
+    poses_mapped_by_methods[method] = indices
+
+    # print(method)
+    # print(scorings[indices])
     for index in indices:
         to_displayed_point_csv = pd.read_csv(f"naht2/{welding_point_filenames[index]}", sep=';')
         Punkt_Pos: str = to_displayed_point_csv.head(1)["Punkt_Pos"].values[0]
@@ -113,7 +142,8 @@ for method in result_predicted_file.columns.values[1:]:
         # print(f"torch_{1 if WkzName=='MRW510_10GH' else 2}_method_{method}")
         elements.append(
             create_pose_torch(
-                torch_color=torch_color, mesh_torch=copy(torch1) if WkzName=="MRW510_10GH" else copy(torch2),
+                torch_color=torch_color, 
+                mesh_torch=copy(torch1) if WkzName=="MRW510_10GH" else copy(torch2),
                 position=[float(coord) for coord in Punkt_Pos.split(" ")], 
                 XVek=[float(coord) for coord in Frame_XVek.split(" ")],
                 YVek=[float(coord) for coord in Frame_YVek.split(" ")],
@@ -123,4 +153,31 @@ for method in result_predicted_file.columns.values[1:]:
     i_th = i_th + 1
     # break
 
+# print(poses_mapped_by_methods)
+SHOW_OBJECT_WITH_ALL_POSES = True
+if SHOW_OBJECT_WITH_ALL_POSES:
+    mapped_poses = []   # hold all poses that were mapped by one of the methods
+    for key, value in poses_mapped_by_methods.items():
+        mapped_poses = mapped_poses + list(value)
+    mapped_poses = set(mapped_poses)
+    for filename in welding_point_filenames:
+        if filename not in mapped_poses:
+            point_file = pd.read_csv(f"naht2/{filename}", sep=';')
+            head_1 = point_file.head(1)
+            Punkt_Pos: str = head_1["Punkt_Pos"].values[0]
+            WkzName: str = head_1["WkzName"].values[0]
+            Frame_XVek: str = head_1["Frame_Xvek"].values[0]
+            Frame_YVek: str = head_1["Frame_Yvek"].values[0]
+            Frame_ZVek: str = head_1["Frame_Zvek"].values[0]
+            torch_color = np.array([0, 255, 0])/255
+            elements.append(
+                create_pose_torch(
+                    torch_color=torch_color, 
+                    mesh_torch=copy(torch1) if WkzName=="MRW510_10GH" else copy(torch2),
+                    position=[float(coord) for coord in Punkt_Pos.split(" ")], 
+                    XVek=[float(coord) for coord in Frame_XVek.split(" ")],
+                    YVek=[float(coord) for coord in Frame_YVek.split(" ")],
+                    ZVek=[float(coord) for coord in Frame_ZVek.split(" ")],
+                )
+            )
 o3d.visualization.draw_geometries(elements)
