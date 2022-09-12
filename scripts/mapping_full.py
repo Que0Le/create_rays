@@ -10,7 +10,7 @@ import pandas as pd
 from pathlib import Path
 import difflib
 import open3d as o3d
-from open3d_visualize_predicted_welding_spot import create_pose_torch
+# from open3d_visualize_predicted_welding_spot import create_pose_torch
 from copy import copy
 
 NAHT_DIR = "naht2"
@@ -19,14 +19,14 @@ TEST_OBJ = "201910204483"
 TEST_NAHT = "PgmDef_34_0" # has 2 Punkt, so we take first one.
 
 
-SHOW_OBJECT_WITH_ALL_POSES = False
-elements = []
-torch1 = o3d.io.read_triangle_mesh("torches/MRW510_10GH.obj")
-torch2 = o3d.io.read_triangle_mesh("torches/TAND_GERAD_DD.obj")
-if SHOW_OBJECT_WITH_ALL_POSES:
-    mesh_model = o3d.io.read_triangle_mesh("components/201910204483_R1.obj")
-    mesh_model.compute_vertex_normals()
-    elements.append(mesh_model)
+# SHOW_OBJECT_WITH_ALL_POSES = False
+# elements = []
+# torch1 = o3d.io.read_triangle_mesh("torches/MRW510_10GH.obj")
+# torch2 = o3d.io.read_triangle_mesh("torches/TAND_GERAD_DD.obj")
+# if SHOW_OBJECT_WITH_ALL_POSES:
+#     mesh_model = o3d.io.read_triangle_mesh("components/201910204483_R1.obj")
+#     mesh_model.compute_vertex_normals()
+#     elements.append(mesh_model)
 
 
 def setup_pb():
@@ -87,17 +87,17 @@ def generate_hit_for_punkt(
     ]))
 
     # create pos for visualization the whole object with poses
-    if SHOW_OBJECT_WITH_ALL_POSES:
-        elements.append(
-            create_pose_torch(
-                torch_color=np.array([255, 0, 0])/255, 
-                mesh_torch=copy(torch1) if WkzName=="MRW510_10GH" else copy(torch2),
-                position=punk_xyz, 
-                XVek=frame_veks[0],
-                YVek=frame_veks[1],
-                ZVek=frame_veks[2],
-            )
-        )
+    # if SHOW_OBJECT_WITH_ALL_POSES:
+    #     elements.append(
+    #         create_pose_torch(
+    #             torch_color=np.array([255, 0, 0])/255, 
+    #             mesh_torch=copy(torch1) if WkzName=="MRW510_10GH" else copy(torch2),
+    #             position=punk_xyz, 
+    #             XVek=frame_veks[0],
+    #             YVek=frame_veks[1],
+    #             ZVek=frame_veks[2],
+    #         )
+    #     )
 
     hit_pos = []
     nor_pos = []
@@ -285,6 +285,6 @@ with open(f"result_predict.csv", 'w') as result_predict_csvfile:
         ])
 
 
-if SHOW_OBJECT_WITH_ALL_POSES:
-    o3d.visualization.draw_geometries(elements)
+# if SHOW_OBJECT_WITH_ALL_POSES:
+#     o3d.visualization.draw_geometries(elements)
     # TODO: how to export to image???

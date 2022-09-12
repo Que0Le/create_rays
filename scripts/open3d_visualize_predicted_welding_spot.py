@@ -122,7 +122,7 @@ for method in result_predicted_file.columns.values[1:]:
     #     i_th = i_th + 1
     #     continue
     scorings = result_predicted_file[method].to_numpy()    # np array holds scorings for current method
-    indices = get_top_scoring_indices_for_method(scorings=scorings, method=method, nbr_values=50)
+    indices = get_top_scoring_indices_for_method(scorings=scorings, method=method, nbr_values=70)
     poses_mapped_by_methods[method] = indices
 
     # print(method)
