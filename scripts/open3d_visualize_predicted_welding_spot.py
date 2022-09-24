@@ -30,9 +30,12 @@ def get_top_scoring_indices_for_method(scorings: np.array, method: str, nbr_valu
         return ind[np.argsort(a=scorings[ind])]
     elif method == "Fl_norms_distance":
         # Smaller is bettter
-        scorings = np.absolute(scorings)
+        # scorings = np.absolute(scorings)
+        max_value = scorings.max()
+        scorings = np.array([s if s>=0 else max_value for s in scorings])
+        # print(scorings)
         ind = np.argpartition(a=scorings, kth=nbr_values)[:nbr_values]
-        return ind[np.argsort(a=-1*scorings[ind])]        
+        return ind[np.argsort(a=-1*scorings[ind])]
     else:
         return np.array([])
 
@@ -82,7 +85,8 @@ torch2 = o3d.io.read_triangle_mesh("torches/TAND_GERAD_DD.obj")
 to_predict_point_csv = pd.read_csv(f"to_predict_Punkt.csv", sep=';')
 mesh_sphere = o3d.geometry.TriangleMesh.create_sphere(radius = 300.0)
 head_1 = to_predict_point_csv.head(1)
-Punkt_Pos: str = head_1["Punkt_Pos"].values[0]
+# Punkt_Pos: str = head_1["Punkt_Pos"].values[0]
+Punkt_Pos: str = head_1["Frame_Pos"].values[0]
 Frame_XVek: str = head_1["Frame_Xvek"].values[0]
 Frame_YVek: str = head_1["Frame_Yvek"].values[0]
 Frame_ZVek: str = head_1["Frame_Zvek"].values[0]
@@ -122,11 +126,11 @@ for method in result_predicted_file.columns.values[1:]:
     #     i_th = i_th + 1
     #     continue
     scorings = result_predicted_file[method].to_numpy()    # np array holds scorings for current method
-    indices = get_top_scoring_indices_for_method(scorings=scorings, method=method, nbr_values=70)
+    indices = get_top_scoring_indices_for_method(scorings=scorings, method=method, nbr_values=50)
     poses_mapped_by_methods[method] = indices
 
-    # print(method)
-    # print(scorings[indices])
+    print(method)
+    print(scorings[indices])
     for index in indices:
         to_displayed_point_csv = pd.read_csv(f"naht2/{welding_point_filenames[index]}", sep=';')
         Punkt_Pos: str = to_displayed_point_csv.head(1)["Punkt_Pos"].values[0]

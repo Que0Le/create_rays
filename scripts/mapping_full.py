@@ -116,7 +116,7 @@ def generate_hit_for_punkt(
     # 16384  2^14
     for xy in range(num_ray):
         for z in range(num_ray):
-            start_pos = punk_xyz/1000
+            start_pos = np.array(frame_pos)/1000
             phi = 2. * math.pi * float(xy) / num_ray
             theta = 2. * math.pi * float(z) / num_ray
             end_pos = [s+e for s, e in zip(
@@ -222,7 +222,7 @@ setup_pb()
 """ Generate the DB """
 generate_db_for_obj(
     obj_dir=TEST_OBJ, target_dir=NAHT_DIR, 
-    num_ray=10, ray_len=1, miss_faction=1, draw_breams=False
+    num_ray=50, ray_len=1, miss_faction=1, draw_breams=False
 )
 
 
