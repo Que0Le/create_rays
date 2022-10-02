@@ -222,7 +222,7 @@ setup_pb()
 """ Generate the DB """
 generate_db_for_obj(
     obj_dir=TEST_OBJ, target_dir=NAHT_DIR, 
-    num_ray=50, ray_len=1, miss_faction=1, draw_breams=False
+    num_ray=20, ray_len=1, miss_faction=1, draw_breams=False
 )
 
 
@@ -241,12 +241,14 @@ Punkt_Fl_Norm2: str = first_row["Punkt_Fl_Norm2"].values[0]
 to_predict_norms_l2_distance = np.linalg.norm(
     np.array([float(a) for a in Punkt_Fl_Norm1.split(" ")])-np.array([float(b) for b in Punkt_Fl_Norm2.split(" ")])
 )
-
+norm1_vector = [float(a) for a in Punkt_Fl_Norm1.split(" ")]
+norm2_vector = [float(a) for a in Punkt_Fl_Norm2.split(" ")]
+norm_Fl_to_predict = norm1_vector + norm2_vector
 # List of only DB file
 list_naht_csv_file = os.listdir(f"{NAHT_DIR}/")
 # list_naht_csv_file.remove("to_predict_Punkt.csv")
 
-pred_methods = ["L2_Norm", "difflib_SequenceMatcher", "Fl_norms_distance"]
+pred_methods = ["L2_Norm", "difflib_SequenceMatcher", "Fl_norms_distance", "Fl_angle_degree"]
 res_dist = []   # hold scores for all Punkt
 
 for naht_file in list_naht_csv_file:
@@ -269,6 +271,17 @@ for naht_file in list_naht_csv_file:
         np.array([float(a) for a in Punkt_Fl_Norm1.split(" ")])-np.array([float(b) for b in Punkt_Fl_Norm2.split(" ")])
     )
     pred_score_for_methods["Fl_norms_distance"] = norms_l2_distance - to_predict_norms_l2_distance
+    # Fl angle
+    norm1_vector = [float(a) for a in Punkt_Fl_Norm1.split(" ")]
+    norm2_vector = [float(a) for a in Punkt_Fl_Norm2.split(" ")]
+    norm_Fl = norm1_vector + norm2_vector
+    unit_vector_1 = norm_Fl / np.linalg.norm(norm_Fl)
+    unit_vector_2 = norm_Fl_to_predict / np.linalg.norm(norm_Fl_to_predict)
+    dot_product = np.dot(unit_vector_1, unit_vector_2)
+    angle_against_to_predict = np.arccos(dot_product)  # in radian
+    pred_score_for_methods["Fl_angle"] = angle_against_to_predict
+    pred_score_for_methods["Fl_angle_degree"] = math.degrees(angle_against_to_predict)
+
     # TODO: more methods
 
     # Add result object

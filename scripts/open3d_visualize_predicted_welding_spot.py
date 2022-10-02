@@ -36,12 +36,16 @@ def get_top_scoring_indices_for_method(scorings: np.array, method: str, nbr_valu
         # print(scorings)
         ind = np.argpartition(a=scorings, kth=nbr_values)[:nbr_values]
         return ind[np.argsort(a=-1*scorings[ind])]
+    elif method == "Fl_angle_degree":
+        # Smaller is bettter
+        ind = np.argpartition(a=scorings, kth=nbr_values)[:nbr_values]
+        return ind[np.argsort(a=-1*scorings[ind])]
     else:
         return np.array([])
 
     """ Test
     a = np.array([9, 4, -4, 3, 3, -9, 0, 4, 6, 0])
-    # index       0  1   2  3  4   5  6  7  8  8
+    # index       0  1   2  3  4   5  6  7  8  9
 
     ind = get_top_scoring_indices_for_method(scorings=a, method="L2_Norm", nbr_values=5)
     print(ind)
@@ -114,6 +118,9 @@ torches_colors = {
     "torch_1_method_Fl_norms_distance": np.array([0, 0, 255])/255,
     "torch_2_method_Fl_norms_distance": np.array([0, 0, 255])/255,
     #
+    "torch_1_method_Fl_angle_degree": np.array([158, 168, 50])/255,
+    "torch_2_method_Fl_angle_degree": np.array([158, 168, 50])/255,
+    #
     "torch_1_to_predict_spot": np.array([255, 255, 255])/255,
     "torch_2_to_predict_spot": np.array([255, 255, 255])/255,
 }
@@ -122,7 +129,7 @@ i_th = 1
 poses_mapped_by_methods = {}
 
 for method in result_predicted_file.columns.values[1:]:
-    # if method != "Fl_norms_distance":
+    # if method != "Fl_angle_degree":
     #     i_th = i_th + 1
     #     continue
     scorings = result_predicted_file[method].to_numpy()    # np array holds scorings for current method
@@ -184,4 +191,6 @@ if SHOW_OBJECT_WITH_ALL_POSES:
                     ZVek=[float(coord) for coord in Frame_ZVek.split(" ")],
                 )
             )
+
 o3d.visualization.draw_geometries(elements)
+o3d.visualization.run()
